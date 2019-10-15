@@ -8,4 +8,4 @@ SP-Assist was created to do that job for me.  It also allows me to search for sp
 
 ## 10/15/2019
 
-Turns out this is useful to people other than myself.  Since Java will soon be required on all company PCs I've switch over to that.
+Turns out this is useful to people other than myself.  Since Java will soon be required on all company PCs I've switch over to that.  
