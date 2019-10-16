@@ -58,7 +58,7 @@ public class Brands {
       this.BRAND_SUFFIX.put("Canada", all);
       this.BRAND_SUFFIX.put("All", all);
             
-      String baseDir = ".\\";
+      String baseDir = "//VSP021320/GSC-Pub/BOM Squad/BOM-Smart Parts";
       this.BRAND_DIRS.put("Acer", Paths.get(baseDir, "Acer_Gateway_Emachine"));
       this.BRAND_DIRS.put("Apple", Paths.get(baseDir, "Apple-APP"));
       this.BRAND_DIRS.put("Asus", Paths.get(baseDir, "Asus-ASU"));

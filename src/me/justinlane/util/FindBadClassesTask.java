@@ -44,20 +44,19 @@ public class FindBadClassesTask extends Task {
    * @returns processed as a list of file with invalid classes
    */
   @Override
-  public List<List<String>> processFile(String filePath) {
+  public List<List<String>> processFile(Path filePath) {
     List<List<String>> processed = new ArrayList<List<String>>();
     List<List<String>> csvFile = UsefulFunc.readFile(filePath);
     csvFile.removeIf(el -> el.size() < 3);
     for (List<String> line : csvFile) {
       if (!UsefulFunc.classIsValid(line.get(0))) {
-        Path path = Paths.get(filePath);
-        String fileName = path.getFileName().toString();
+        String fileName = filePath.getFileName().toString();
         String creator = "";
         String lastModified = "";
         
         try {
-          creator += Files.getOwner(path).toString();
-          lastModified += Files.getLastModifiedTime(path).toString();
+          creator += Files.getOwner(filePath).toString();
+          lastModified += Files.getLastModifiedTime(filePath).toString();
         } catch (IOException e) {
           ErrorPopUp.showError("File Not Found",
                                String.format("%s could not be found!",
@@ -74,7 +73,7 @@ public class FindBadClassesTask extends Task {
       
     return processed;    
   }
- 
+  
   /**
    * Once <code>doInBackground</code> is done this will save the results 
    * to a *.CSV file and progress will be set to 0.

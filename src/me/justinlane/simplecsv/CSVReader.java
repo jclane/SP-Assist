@@ -1,7 +1,10 @@
 package me.justinlane.simplecsv;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.FileNotFoundException;
+
+import java.nio.file.Path;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +42,38 @@ public class CSVReader {
     }
     return result;
   }  
+  
+  /** 
+   * Reads filePath using delimit as the delimiter.
+   * 
+   * @param filePath the path to the file to be read as type Path
+   * @param delimit the string to use a as delimiter
+   * @return a list of lists with string values from the file
+   */
+  public static List<List<String>> readLines(Path filePath, String delimit) throws IOException {
+    Scanner scanner = new Scanner(filePath);
+    List<List<String>> lines = new ArrayList<List<String>>();
+    while (scanner.hasNextLine()) {
+      List<String> columnData = new ArrayList<String>();
+      for (String data : handleQuotes(scanner.nextLine(), delimit)) {
+        columnData.add(data); 
+      }    
+      lines.add(columnData);        
+    }
+    scanner.close();
+    
+    return lines;
+  }  
+  
+  /**
+   * Reads filePath using commas as the delimiter.
+   * 
+   * @param filePath the path to the file to be read as type Path
+   * @return a list of lists with string values from the file
+   */
+  public static List<List<String>> readLines(Path filePath) throws IOException {
+    return readLines(filePath, ",");
+  }
   
   /** 
    * Reads filePath using delimit as the delimiter.

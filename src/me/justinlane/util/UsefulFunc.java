@@ -3,8 +3,12 @@ package me.justinlane.util;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,6 +66,21 @@ public class UsefulFunc {
   /**
    * Uses simplecsv.CSVWriter to write data to file.
    * 
+   * @param path type Path representing the path and file name to write
+   * @param data a list containing a lists of strings to write 
+   */
+  public static void writeFile(Path path, List<List<String>> data) {
+    try {
+      CSVWriter.writeLines(path, data);
+    } catch (IOException e) {
+      ErrorPopUp.showError("Write Error", "Path not found.");
+      e.printStackTrace();
+    }
+  }
+  
+  /**
+   * Uses simplecsv.CSVWriter to write data to file.
+   * 
    * @param path a string representing the path and file name to write
    * @param data a list containing a lists of strings to write 
    */
@@ -70,8 +89,26 @@ public class UsefulFunc {
       CSVWriter.writeLines(path, data);
     } catch (IOException e) {
       ErrorPopUp.showError("Write Error", "Path not found.");
+      e.printStackTrace();
     }
   }
+  
+  /**
+   * Uses simplecsv.CSVReader to read and parse CSV files.
+   *
+   * @param path a Path object representing the path and file name to read
+   * @return a list containing a lists of strings representing the data 
+   */
+  public static List<List<String>> readFile(Path path) {
+    List<List<String>> data = new ArrayList<List<String>>();
+    try {
+      data.addAll(CSVReader.readLines(path));
+    } catch (FileNotFoundException e) {
+      ErrorPopUp.showError("Read Error", "File not found.");
+    } finally {
+      return data;
+    }
+  }  
   
   /**
    * Uses simplecsv.CSVReader to read and parse CSV files.
@@ -96,20 +133,43 @@ public class UsefulFunc {
    * only those brands matching the correct suffix.
    *
    * @param brand a string indicating the users chosen brand
-   * @return a list of file paths as strings
+   * @return a list of file paths as type Path
    */
-  public static List<String> getFiles(String brand) {
+  public static List<Path> getFiles(String brand) {
     final Brands brands = new Brands();
+    final List<String> VALID_BRANDS = Arrays.asList(brands.getBrandSuffix(brand));
     Path rootDir = brands.getBrandDir(brand);
-    List<String> files = new ArrayList<String>();
-    try (Stream<Path> paths = Files.walk(rootDir)) {
-      paths.filter(
-          p -> Arrays.asList(brands.getBrandSuffix(brand))
-                                      .contains(getFileSuffix(p.getFileName().toString())))
-                                      .map(p -> p.toString())
-                                      .forEach(files::add);
+    List<Path> files = new ArrayList<Path>();
+            
+    try {
+      Files.walkFileTree(rootDir, new SimpleFileVisitor<Path>() {
+        
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir,
+                BasicFileAttributes attrs) {
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+            if (VALID_BRANDS.contains(getFileSuffix(file.getFileName().toString()))) {
+              files.add(file);
+            }
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFileFailed(Path file, IOException e) {
+            ErrorPopUp.showError("File Not Found",
+                                 String.format("%s was not found.", 
+                                               file.getFileName().toString()));
+            return FileVisitResult.CONTINUE;
+        }
+      });
     } catch (IOException e) {
-      ErrorPopUp.showError("Read Error", "Directory not found.");
+        ErrorPopUp.showError("File Not Found",
+                             String.format("%s was not found.", 
+                                           rootDir.getFileName().toString()));
     }
     
     return files;
