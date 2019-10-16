@@ -1,5 +1,7 @@
 package me.justinlane.util;
 
+import java.nio.file.Path;
+
 import javax.swing.JProgressBar;
 import javax.swing.SwingWorker;
 
@@ -14,7 +16,7 @@ public class Task extends SwingWorker<Void, Void> {
   private List<List<String>> results;
   private SearchTypeEnum searchType;
   private int searchTypeInt;
-  private List<String> paths;
+  private List<Path> paths;
   private int numberOfFiles;
   private int currenFileNum = 0;
 
@@ -51,7 +53,7 @@ public class Task extends SwingWorker<Void, Void> {
   /**
    * Returns paths.
    */  
-  public List<String> getPaths() {
+  public List<Path> getPaths() {
     return this.paths;
   }
   
@@ -69,7 +71,7 @@ public class Task extends SwingWorker<Void, Void> {
     return this.currenFileNum;
   }
   
-  public List<List<String>> processFile(String filePath){
+  public List<List<String>> processFile(Path filePath){
     return new ArrayList<List<String>>();
   };
 
@@ -86,7 +88,7 @@ public class Task extends SwingWorker<Void, Void> {
     setProgress(0);
         
     while (progress < this.numberOfFiles && !isCancelled()) { 
-      for (String filePath : this.paths) {
+      for (Path filePath : this.paths) {
         if (!isCancelled()) {
           List<List<String>> processed = processFile(filePath);
           if (processed.size() > 0) {

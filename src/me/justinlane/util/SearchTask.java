@@ -85,15 +85,14 @@ public class SearchTask extends Task {
    *                  that matched the query
    */
   @Override
-  public List<List<String>> processFile(String filePath) {
+  public List<List<String>> processFile(Path filePath) {
     List<List<String>> results = new ArrayList<List<String>>();
     List<List<String>> csvFile = UsefulFunc.readFile(filePath);
     csvFile.removeIf(el -> el.size() < 3);
     for (List<String> line : csvFile) {
       if (queryFound(getSearchTypeInt(), getQuery(), line)) {
-        Path path = Paths.get(filePath);
-        line.add(0, path.getParent().toString());
-        line.add(1, path.getFileName().toString());
+        line.add(0, filePath.getParent().toString());
+        line.add(1, filePath.getFileName().toString());
         results.add(line);
       }
     }

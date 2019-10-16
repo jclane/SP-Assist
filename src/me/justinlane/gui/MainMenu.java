@@ -136,9 +136,11 @@ public class MainMenu implements ActionListener, PropertyChangeListener {
       case "Find Bad Classes": 
           this.searchTask = new FindBadClassesTask();
           if (this.searchTask.getNumberOfFiles() > 0) {
+            this.searchTask.addPropertyChangeListener(this);
             this.pm = new ProgressMonitor(this.frame, "Searching...",
                               "", 0, 100);
-            this.searchTask.addPropertyChangeListener(this);
+            this.pm.setMillisToPopup(0);
+            this.pm.setMillisToDecideToPopup(0);            
             this.searchTask.execute();
           }            
           break;
@@ -153,9 +155,11 @@ public class MainMenu implements ActionListener, PropertyChangeListener {
           
           this.searchTask = new SearchTask(searchQuery, brand, searchType);
           if (this.searchTask.getNumberOfFiles() > 0) {
-            this.pm = new ProgressMonitor(this.frame, "Searching...",
-                                "", 0, 100);
             this.searchTask.addPropertyChangeListener(this);
+            this.pm = new ProgressMonitor(this.frame, "Searching...",
+                              "", 0, 100);
+            this.pm.setMillisToPopup(500);
+            this.pm.setMillisToDecideToPopup(500);            
             this.searchTask.execute();
           }
           break;
