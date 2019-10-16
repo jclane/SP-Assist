@@ -13,6 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import me.justinlane.gui.ErrorPopUp;
 import me.justinlane.simplecsv.CSVWriter;
 import me.justinlane.simplecsv.CSVReader;
 
@@ -68,7 +69,7 @@ public class UsefulFunc {
     try {
       CSVWriter.writeLines(path, data);
     } catch (IOException e) {
-      System.out.println(e);
+      ErrorPopUp.showError("Write Error", "Path not found.");
       e.printStackTrace();
     }
   }
@@ -84,7 +85,7 @@ public class UsefulFunc {
     try {
       data.addAll(CSVReader.readLines(path));
     } catch (FileNotFoundException e) {
-      System.out.println("File not found");
+      ErrorPopUp.showError("Read Error", "File not found.");
     } finally {
       return data;
     }
@@ -109,7 +110,7 @@ public class UsefulFunc {
                                       .map(p -> p.toString())
                                       .forEach(files::add);
     } catch (IOException e) {
-      e.printStackTrace();
+      ErrorPopUp.showError("Read Error", "Directory not found.");
     }
     
     return files;
