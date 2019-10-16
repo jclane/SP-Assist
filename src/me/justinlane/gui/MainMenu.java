@@ -9,8 +9,11 @@ import java.awt.event.WindowAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import java.lang.StringBuilder;
+
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -60,7 +63,7 @@ public class MainMenu implements ActionListener, PropertyChangeListener {
   JTextField searchField;
   JButton searchButton;
   Task searchTask;
-  ProgressMonitor pm; 
+  ProgressMonitor pm;
   
   /**
    * Creates and displays the application GUI.
@@ -124,6 +127,49 @@ public class MainMenu implements ActionListener, PropertyChangeListener {
     frame.setVisible(true);
   }
   
+  /** 
+   * Calculates time remaining for a <code>Task</code> and returns a string.
+   *
+   * @param timeInMillis time a long representing time in milliseconds
+   */
+  public long[] calculateTimeLeft(long timeInMillis) {
+    long hour = TimeUnit.MILLISECONDS.toHours(timeInMillis);
+    long minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMillis);
+    long seconds = TimeUnit.MILLISECONDS.toSeconds(timeInMillis);
+    
+    long[] result = {hour, minutes, seconds};
+    
+    return result;
+   }
+   
+   /**
+    * Builds the time remaining string.
+    *
+    * @param timeArr a long[] containing time in hours, minutes, seconds
+    */
+  public String buildTimeString(long[] timeArr) {
+    StringBuilder sb = new StringBuilder();
+    
+    for (int i = 0; i < timeArr.length; i++) {
+      if (timeArr[i] > 0) {
+        switch (i) {
+          case 0: 
+            sb.append(String.format("%d %s", timeArr[i], (timeArr[i] > 1) ? "hours" : "hour"));
+            break;
+          case 1:
+            sb.append(String.format("%d %s", timeArr[i], (timeArr[i] > 1) ? "minutes" : "minute"));
+            break;
+          case 2:
+            sb.append(String.format("%d %s", timeArr[i], (timeArr[i] > 1) ? "seconds" : "second"));
+        }
+        sb.append(" remaining");
+        break;
+      }
+    }
+       
+    return sb.toString();
+  }    
+  
   /**
    * Overrides the actionPerformed event and listens for the action command
    * "Find Bad Classes" or "Search", after which the relevant method is called.
@@ -139,8 +185,7 @@ public class MainMenu implements ActionListener, PropertyChangeListener {
             this.searchTask.addPropertyChangeListener(this);
             this.pm = new ProgressMonitor(this.frame, "Searching...",
                               "", 0, 100);
-            this.pm.setMillisToPopup(0);
-            this.pm.setMillisToDecideToPopup(0);            
+            this.pm.setProgress(0);
             this.searchTask.execute();
           }            
           break;
@@ -158,8 +203,7 @@ public class MainMenu implements ActionListener, PropertyChangeListener {
             this.searchTask.addPropertyChangeListener(this);
             this.pm = new ProgressMonitor(this.frame, "Searching...",
                               "", 0, 100);
-            this.pm.setMillisToPopup(500);
-            this.pm.setMillisToDecideToPopup(500);            
+            this.pm.setProgress(0);            
             this.searchTask.execute();
           }
           break;
@@ -180,12 +224,17 @@ public class MainMenu implements ActionListener, PropertyChangeListener {
   @Override
   public void propertyChange(PropertyChangeEvent evt) {
     if (evt.getPropertyName().equals("progress")) {
-      int progress = (int) evt.getNewValue();
+      int progress = (int) evt.getNewValue();    
       this.pm.setProgress(progress);
-      this.pm.setNote(String.format("Now searching file %s of %s", 
-                                    String.valueOf(this.searchTask.getCurrentFileNum()), 
-                                    String.valueOf(this.searchTask.getNumberOfFiles()))
-                                    );
+      int numberOfFiles = this.searchTask.getNumberOfFiles();
+      int currentFileNum = this.searchTask.getCurrentFileNum();
+      long estTimeRemaining = (numberOfFiles - currentFileNum) * this.searchTask.getTimeToProcess();
+      
+      String timeRemaining = buildTimeString(calculateTimeLeft(estTimeRemaining));
+      this.pm.setNote(String.format("%s of %s (%s)",
+                                    String.valueOf(currentFileNum),
+                                    String.valueOf(numberOfFiles),
+                                    timeRemaining));
       if (this.pm.isCanceled() || this.searchTask.isDone()) {
         if (this.pm.isCanceled()) {
             this.searchTask.cancel(true);

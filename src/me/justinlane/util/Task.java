@@ -19,6 +19,8 @@ public class Task extends SwingWorker<Void, Void> {
   private List<Path> paths;
   private int numberOfFiles;
   private int currenFileNum = 0;
+  private int previousFileNum = 0;
+  private long timeToProcess = 0;
 
   public Task() {
     this.results = new ArrayList<List<String>>();
@@ -70,7 +72,17 @@ public class Task extends SwingWorker<Void, Void> {
   public int getCurrentFileNum() {
     return this.currenFileNum;
   }
-  
+
+  /**
+   *
+   */
+  public long getTimeToProcess() {
+    return this.timeToProcess;
+  }
+
+  /**
+   * Base method meant to overriden.
+   */
   public List<List<String>> processFile(Path filePath){
     return new ArrayList<List<String>>();
   };
@@ -90,6 +102,7 @@ public class Task extends SwingWorker<Void, Void> {
     while (progress < this.numberOfFiles && !isCancelled()) { 
       for (Path filePath : this.paths) {
         if (!isCancelled()) {
+          long timeStart = System.currentTimeMillis();
           List<List<String>> processed = processFile(filePath);
           if (processed.size() > 0) {
             this.results.addAll(processed);
@@ -99,6 +112,7 @@ public class Task extends SwingWorker<Void, Void> {
           setProgress(100 * progress / this.numberOfFiles);
           try {
               Thread.sleep(100);
+              this.timeToProcess = System.currentTimeMillis() - timeStart;
           } catch (InterruptedException ignore) {}
         } else {
           break;
