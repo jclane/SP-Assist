@@ -74,7 +74,7 @@ public class FindBadClassesTask extends Task {
       
     return processed;    
   }
-  
+ 
   /**
    * Once <code>doInBackground</code> is done this will save the results 
    * to a *.CSV file and progress will be set to 0.
