@@ -70,7 +70,6 @@ public class UsefulFunc {
       CSVWriter.writeLines(path, data);
     } catch (IOException e) {
       ErrorPopUp.showError("Write Error", "Path not found.");
-      e.printStackTrace();
     }
   }
   
