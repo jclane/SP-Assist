@@ -36,8 +36,9 @@ public class FindBadClassesTask extends Task {
   
   /**
    * Loops through lines of <code>filePath</code> where <code>classIsValid</code>
-   * is called. If it returns <code>false</code> then the line, file path, 
-   * file name, and the creator of the file is added to a list.
+   * is called. If it returns <code>false</code> then the file name, file owner, 
+   * date the file was last modified, invalid class and part number are added to
+   * an a list and returned.
    * 
    * @param filePath string representing the complete file path
    * @returns processed as a list of file with invalid classes
@@ -52,18 +53,20 @@ public class FindBadClassesTask extends Task {
         Path path = Paths.get(filePath);
         String fileName = path.getFileName().toString();
         String creator = "";
+        String lastModified = "";
         
         try {
           creator += Files.getOwner(path).toString();
+          lastModified += Files.getLastModifiedTime(path).toString();
         } catch (IOException e) {
           ErrorPopUp.showError("File Not Found",
                                String.format("%s could not be found!",
                                fileName));
         }
         
-        line.add(0, path.getParent().toString());
-        line.add(1, fileName);          
-        line.add(creator);
+        line.add(0, fileName);          
+        line.add(1, creator);
+        line.add(2, lastModified);
         processed.add(line.subList(0, 5));
       }
 
@@ -71,7 +74,7 @@ public class FindBadClassesTask extends Task {
       
     return processed;    
   }
-  
+ 
   /**
    * Once <code>doInBackground</code> is done this will save the results 
    * to a *.CSV file and progress will be set to 0.
