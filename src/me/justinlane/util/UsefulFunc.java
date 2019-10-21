@@ -8,11 +8,13 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -126,6 +128,20 @@ public class UsefulFunc {
       return data;
     }
   }
+
+  /**
+   * Takes a filename and returns the extension.
+   *
+   * @param fileName a string representing a file name.
+   * @return a string representing the extension or
+   *      an empty string.
+   * @see <a href:https://www.baeldung.com/java-file-extension />
+   */
+  public static Optional<String> getExtension(String filename) {
+    return Optional.ofNullable(filename)
+      .filter(f -> f.contains("."))
+      .map(f -> f.substring(filename.lastIndexOf(".") + 1));
+  }
   
   /**
    * Uses brand to obtain the path to that brand's folder.
@@ -140,22 +156,51 @@ public class UsefulFunc {
     final List<String> VALID_BRANDS = Arrays.asList(brands.getBrandSuffix(brand));
     Path rootDir = brands.getBrandDir(brand);
     List<Path> files = new ArrayList<Path>();
-            
+    List<String> validPaths = new ArrayList<String>();
+    
+    if (brand.equals("All")) {
+      validPaths.add(Paths.get("//VSP021320/GSC-Pub/BOM Squad/BOM-Smart Parts",
+                               "Canada").toString());
+      
+      brands.getBrandDirs().forEach( (k, v) -> {
+        if (!k.equals("All") || !k.equals("Sony") || !k.equals("Toshiba")) {
+          validPaths.add(v.toString());
+        }
+      });
+    }
+    
     try {
       Files.walkFileTree(rootDir, new SimpleFileVisitor<Path>() {
         
         @Override
         public FileVisitResult preVisitDirectory(Path dir,
                 BasicFileAttributes attrs) {
-            return FileVisitResult.CONTINUE;
+          boolean worthVisiting = true;
+          if (brand.equals("All")) {
+            if (dir != rootDir) {
+              for (int i = 0; i < validPaths.size(); i++) {
+                if (dir.toString().startsWith(validPaths.get(i))) {
+                  worthVisiting = true;
+                  break;
+                } else if (i == validPaths.size() - 1 && !dir.toString().startsWith(validPaths.get(i))) {
+                  worthVisiting = false;
+                }
+              }
+            }
+          }
+            
+          return (worthVisiting) ? FileVisitResult.CONTINUE : FileVisitResult.SKIP_SUBTREE;
         }
 
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-            if (VALID_BRANDS.contains(getFileSuffix(file.getFileName().toString()))) {
-              files.add(file);
-            }
-            return FileVisitResult.CONTINUE;
+          String fileName = file.getFileName().toString();
+
+          if (getExtension(fileName).get().equals("csv") &&
+              VALID_BRANDS.contains(getFileSuffix(fileName))) {
+            files.add(file);
+          }
+          return FileVisitResult.CONTINUE;
         }
 
         @Override
@@ -180,7 +225,7 @@ public class UsefulFunc {
    * not include the file extension.
    *
    * @param fileName a string of the complete file path
-   * @return a three brand suffix
+   * @return a string with the three letter brand suffix
    */   
   public static String getFileSuffix(String fileName) {
     Pattern pattern = Pattern.compile("(?<=-)([A-Z]*)(?=\\.)");

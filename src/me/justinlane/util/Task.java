@@ -108,12 +108,11 @@ public class Task extends SwingWorker<Void, Void> {
             this.results.addAll(processed);
           }
           this.currenFileNum += 1;
+          if (this.currenFileNum == 1 || this.currenFileNum % 500 == 0) {
+            this.timeToProcess = System.currentTimeMillis() - timeStart;
+          }
           progress += 1;
           setProgress(100 * progress / this.numberOfFiles);
-          try {
-              Thread.sleep(100);
-              this.timeToProcess = System.currentTimeMillis() - timeStart;
-          } catch (InterruptedException ignore) {}
         } else {
           break;
         }
